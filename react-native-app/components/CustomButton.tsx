@@ -4,8 +4,8 @@ import React from "react";
 interface CustomButtonProps {
   title: string;
   handlePress: () => void;
-  containerStyles: string;
-  textStyles: string;
+  containerStyles?: string;
+  textStyles?: string;
   isLoading: boolean;
 }
 
