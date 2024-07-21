@@ -8,6 +8,7 @@ import CustomButton from "@/components/CustomButton";
 import { Link, router } from "expo-router";
 
 import { createUser } from "../../lib/appwrite";
+import { useGlobalContext } from "../../context/GlobalProvider";
 
 interface SignUpProps {
   title: string;
@@ -20,6 +21,7 @@ interface FormState {
 }
 
 const SignUp: React.FC<SignUpProps> = () => {
+  const { setUser, setIsLogged } = useGlobalContext();
   const [form, setForm] = useState<FormState>({
     username: "",
     email: "",
@@ -38,7 +40,8 @@ const SignUp: React.FC<SignUpProps> = () => {
     try {
       const result = await createUser(form.email, form.password, form.username);
 
-      //set it to globall state
+      setUser(result);
+      setIsLogged(true);
 
       router.replace("/home");
     } catch (error: unknown) {

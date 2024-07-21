@@ -1,98 +1,94 @@
-import { View, Text, Image, ScrollView, Alert } from "react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, ScrollView, Dimensions, Alert, Image } from "react-native";
 
 import { images } from "../../constants";
+import CustomButton from "../../components/CustomButton";
 import FormField from "../../components/FormField";
-import CustomButton from "@/components/CustomButton";
+import { getCurrentUser, signIn } from "../../lib/appwrite";
+import { useGlobalContext } from "../../context/GlobalProvider";
 
-import { signIn } from "@/lib/appwrite";
-
-interface SignInProps {
-  title: string;
-}
-
-interface FormState {
-  email: string;
-  password: string;
-}
-
-const SignIn: React.FC<SignInProps> = () => {
-  const [form, setForm] = useState<FormState>({
+const SignIn = () => {
+  const { setUser, setIsLogged } = useGlobalContext();
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const submit = async () => {
-    if (!form.email || !form.password) {
-      Alert.alert("Error", "Please fill in all the fields");
+    if (form.email === "" || form.password === "") {
+      Alert.alert("Error", "Please fill in all fields");
     }
 
-    setIsSubmitting(true);
+    setSubmitting(true);
 
     try {
-      const result = await signIn(form.email, form.password);
+      await signIn(form.email, form.password);
+      const result = await getCurrentUser();
+      setUser(result);
+      setIsLogged(true);
 
-      //set it to globall state
-
+      Alert.alert("Success", "User signed in successfully");
       router.replace("/home");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        Alert.alert("Error", error.message);
-      } else {
-        Alert.alert("Error", "An unknown error occurred");
-      }
+    } catch (error) {
+      Alert.alert("Error", (error as Error).message);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView>
-        <View className="w-full justify-center min-h-[85vh] px-4 my-6">
+        <View
+          className="w-full flex justify-center h-full px-4 my-6"
+          style={{
+            minHeight: Dimensions.get("window").height - 100,
+          }}
+        >
           <Image
             source={images.logo}
             resizeMode="contain"
-            className="w-[115px] h-[35px]"
+            className="w-[115px] h-[34px]"
           />
-          <Text className="text-2xl text-white text-semibold mt-10 font-psemibold">
+
+          <Text className="text-2xl font-semibold text-white mt-10 font-psemibold">
             Log in to Aora
           </Text>
+
           <FormField
             title="Email"
-            placeholder="Enter your email"
             value={form.email}
             handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles="mt-7"
-            keyboardType="email-adress"
+            keyboardType="email-address"
           />
+
           <FormField
             title="Password"
-            placeholder="Enter your password"
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles="mt-7"
-            keyboardType="password"
           />
+
           <CustomButton
             title="Sign In"
             handlePress={submit}
             containerStyles="mt-7"
             isLoading={isSubmitting}
           />
-          <View className="justify-center pt-5 flex-row gap-2">
+
+          <View className="flex justify-center pt-5 flex-row gap-2">
             <Text className="text-lg text-gray-100 font-pregular">
               Don't have an account?
             </Text>
             <Link
-              href="sign-up"
+              href="/sign-up"
               className="text-lg font-psemibold text-secondary"
             >
-              Sign Up
+              Signup
             </Link>
           </View>
         </View>
