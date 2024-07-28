@@ -20,4 +20,5 @@ expo-env.d.ts
 # @end expo-cli
 
 #appwrite config
-lib/
+lib/appwriteConfig.ts
+README.md
